@@ -1,0 +1,44 @@
+name: Database Migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/prisma/**'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        working-directory: apps/api
+        run: pnpm prisma generate
+
+      - name: Run migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: pnpm prisma migrate deploy
+
+      - name: Migration Success
+        run: echo "✅ Database migration completed successfully!"

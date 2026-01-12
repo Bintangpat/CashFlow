@@ -1,0 +1,22 @@
+{
+  "name": "cashflow",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:api": "pnpm --filter @cashflow/api dev",
+    "dev:web": "pnpm --filter @cashflow/web dev",
+    "build": "pnpm run --parallel build",
+    "lint": "pnpm run --parallel lint",
+    "db:migrate": "pnpm --filter @cashflow/api prisma migrate dev",
+    "db:generate": "pnpm --filter @cashflow/api prisma generate",
+    "db:studio": "pnpm --filter @cashflow/api prisma studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

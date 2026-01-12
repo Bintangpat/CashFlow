@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  OWNER
+  CASHIER
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(CASHIER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  sales Sale[]
+
+  @@map("users")
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  name      String
+  sku       String?
+  costPrice BigInt   @map("cost_price")
+  sellPrice BigInt   @map("sell_price")
+  stock     Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  saleItems SaleItem[]
+
+  @@index([name])
+  @@map("products")
+}
+
+model Sale {
+  id              String   @id @default(uuid())
+  transactionDate DateTime @default(now()) @map("transaction_date")
+  totalAmount     BigInt   @map("total_amount")
+  totalProfit     BigInt   @map("total_profit")
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user  User       @relation(fields: [createdByUserId], references: [id])
+  items SaleItem[]
+
+  @@index([transactionDate])
+  @@map("sales")
+}
+
+model SaleItem {
+  id                  String @id @default(uuid())
+  saleId              String @map("sale_id")
+  productId           String @map("product_id")
+  productNameSnapshot String @map("product_name_snapshot")
+  quantity            Int
+  costPriceSnapshot   BigInt @map("cost_price_snapshot")
+  sellPriceSnapshot   BigInt @map("sell_price_snapshot")
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@map("sale_items")
+}
+
+model CashTransaction {
+  id              String          @id @default(uuid())
+  type            TransactionType
+  category        String
+  amount          BigInt
+  notes           String?
+  transactionDate DateTime        @map("transaction_date")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([transactionDate])
+  @@map("cash_transactions")
+}

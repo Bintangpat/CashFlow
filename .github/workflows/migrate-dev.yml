@@ -1,0 +1,53 @@
+name: Database Migration (Dev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_name:
+        description: 'Migration name (e.g., init, add_products)'
+        required: true
+        default: 'init'
+
+jobs:
+  migrate-dev:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        working-directory: apps/api
+        run: pnpm prisma generate
+
+      - name: Create migration
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: pnpm prisma migrate dev --name ${{ github.event.inputs.migration_name }}
+
+      - name: Commit migration files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add apps/api/prisma/migrations
+          git commit -m "chore: add migration ${{ github.event.inputs.migration_name }}" || echo "No changes to commit"
+          git push
+
+      - name: Migration Success
+        run: echo "✅ Migration '${{ github.event.inputs.migration_name }}' created successfully!"
