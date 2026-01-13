@@ -1,49 +1,81 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service.js';
-import { registerSchema, loginSchema } from '../validators/auth.validator.js';
+import { 
+  registerSchema, 
+  loginSchema,
+  verifyOtpSchema,
+  resendOtpSchema
+} from '../validators/auth.validator.js';
 import { AuthRequest } from '../middlewares/auth.middleware.js';
 import { config } from '../config/index.js';
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: config.nodeEnv === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
 export const authController = {
-  async register(req: Request, res: Response, next: NextFunction) {
+  // Step 1: Request signup - sends OTP
+  async requestSignup(req: Request, res: Response, next: NextFunction) {
     try {
       const input = registerSchema.parse(req.body);
-      const { user, token } = await authService.register(input);
+      const result = await authService.requestSignup(input);
 
-      // Set HttpOnly cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: config.nodeEnv === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-
-      res.status(201).json({
+      res.status(200).json({
         success: true,
-        data: user,
-        message: 'Registrasi berhasil',
+        data: result,
       });
     } catch (error) {
       next(error);
     }
   },
 
-  async login(req: Request, res: Response, next: NextFunction) {
+  // Step 2: Verify signup OTP
+  async verifySignup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = verifyOtpSchema.parse({ ...req.body, type: 'SIGNUP' });
+      const result = await authService.verifySignup(input);
+
+      res.cookie('token', result.token, cookieOptions);
+
+      res.status(200).json({
+        success: true,
+        data: result.user,
+        message: 'Email berhasil diverifikasi',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Request login OTP
+  async requestLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const input = loginSchema.parse(req.body);
-      const { user, token } = await authService.login(input);
+      const result = await authService.requestLogin(input);
 
-      // Set HttpOnly cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: config.nodeEnv === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-
-      res.json({
+      res.status(200).json({
         success: true,
-        data: user,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Verify login OTP
+  async verifyLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = verifyOtpSchema.parse({ ...req.body, type: 'LOGIN' });
+      const result = await authService.verifyLogin(input);
+
+      res.cookie('token', result.token, cookieOptions);
+
+      res.status(200).json({
+        success: true,
+        data: result.user,
         message: 'Login berhasil',
       });
     } catch (error) {
@@ -51,28 +83,50 @@ export const authController = {
     }
   },
 
-  async logout(req: Request, res: Response) {
-    res.clearCookie('token');
-    res.json({
-      success: true,
-      message: 'Logout berhasil',
-    });
+  // Resend OTP
+  async resendOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = resendOtpSchema.parse(req.body);
+      const result = await authService.resendOtp(input);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
   },
 
+  // Logout
+  async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.clearCookie('token', cookieOptions);
+
+      res.json({
+        success: true,
+        message: 'Logout berhasil',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Get current user
   async me(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         return res.status(401).json({
           success: false,
-          message: 'Authentication required',
+          message: 'Not authenticated',
         });
       }
 
-      const user = await authService.getProfile(req.user.userId);
+      const profile = await authService.getProfile(req.user.userId);
 
       res.json({
         success: true,
-        data: user,
+        data: profile,
       });
     } catch (error) {
       next(error);

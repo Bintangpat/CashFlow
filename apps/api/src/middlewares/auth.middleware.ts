@@ -54,3 +54,7 @@ export const roleMiddleware = (...allowedRoles: string[]) => {
     next();
   };
 };
+
+// Alias for convenience
+export const requireRole = roleMiddleware;
+

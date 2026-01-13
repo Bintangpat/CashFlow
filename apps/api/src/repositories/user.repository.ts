@@ -10,30 +10,36 @@ export const userRepository = {
   async findById(id: string) {
     return prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
   },
 
-  async create(data: { email: string; passwordHash: string; role?: 'OWNER' | 'CASHIER' }) {
+  async create(data: {
+    email: string;
+    passwordHash?: string;
+    role?: 'OWNER' | 'CASHIER';
+    emailVerified?: boolean;
+  }) {
     return prisma.user.create({
       data: {
         email: data.email,
         passwordHash: data.passwordHash,
-        role: data.role || 'CASHIER',
+        role: data.role || 'OWNER',
+        emailVerified: data.emailVerified || false,
       },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    });
+  },
+
+  async updateEmailVerified(id: string, verified: boolean) {
+    return prisma.user.update({
+      where: { id },
+      data: { emailVerified: verified },
+    });
+  },
+
+  async updatePassword(id: string, passwordHash: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { passwordHash },
     });
   },
 };

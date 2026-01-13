@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -18,17 +17,41 @@ enum TransactionType {
   EXPENSE
 }
 
-model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(CASHIER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+enum OtpType {
+  SIGNUP
+  LOGIN
+  RESET_PASSWORD
+}
 
-  sales Sale[]
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?   @map("password_hash")
+  emailVerified Boolean   @default(false) @map("email_verified")
+  role          UserRole  @default(CASHIER)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  sales     Sale[]
+  otpTokens OtpToken[]
 
   @@map("users")
+}
+
+model OtpToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  code      String
+  type      OtpType
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([code])
+  @@map("otp_tokens")
 }
 
 model Product {
@@ -42,7 +65,8 @@ model Product {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  saleItems SaleItem[]
+  saleItems       SaleItem[]
+  stockReceivings StockReceiving[]
 
   @@index([name])
   @@map("products")
@@ -91,3 +115,22 @@ model CashTransaction {
   @@index([transactionDate])
   @@map("cash_transactions")
 }
+
+model StockReceiving {
+  id          String   @id @default(uuid())
+  productId   String   @map("product_id")
+  quantity    Int
+  costPerItem BigInt   @map("cost_per_item")
+  totalCost   BigInt   @map("total_cost")
+  notes       String?
+  receivedAt  DateTime @default(now()) @map("received_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([receivedAt])
+  @@index([productId])
+  @@map("stock_receivings")
+}
+
+
