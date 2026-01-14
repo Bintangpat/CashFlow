@@ -1,5 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Validate API URL in production
+if (typeof window !== 'undefined' && API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')) {
+  console.error('❌ NEXT_PUBLIC_API_URL must start with http:// or https://');
+  console.error('Current value:', API_URL);
+  console.error('Expected format: https://your-api-domain.com/api');
+}
+
 interface RequestOptions extends RequestInit {
   json?: unknown;
 }

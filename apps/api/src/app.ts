@@ -7,26 +7,35 @@ import routes from './routes/index.js';
 
 const app: Application = express();
 
-// Middlewares
-const allowedOrigins = [
-  config.frontendUrl,
-  'http://localhost:3000',
-  'http://localhost:3001',
-];
-
-app.use(cors({
+// Middlewares - CORS Configuration
+// Configure CORS with environment-based allowed origins
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin) return callback(null, true);
+    // Allow requests with no origin (like mobile apps, Postman, or curl)
+    if (!origin) {
+      return callback(null, true);
+    }
     
-    if (allowedOrigins.includes(origin)) {
+    // Check if origin is in allowed list
+    if (config.corsOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      // Log blocked origins in development for debugging
+      if (config.nodeEnv === 'development') {
+        console.warn(`⚠️  CORS: Blocked origin: ${origin}`);
+        console.warn(`   Allowed origins:`, config.corsOrigins);
+      }
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-}));
+  credentials: config.corsCredentials,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'],
+  maxAge: 86400, // 24 hours - preflight cache
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -50,6 +59,8 @@ app.use(errorMiddleware);
 app.listen(config.port, () => {
   console.log(`🚀 Server running on port ${config.port}`);
   console.log(`📍 Environment: ${config.nodeEnv}`);
+  console.log(`🌐 CORS allowed origins:`, config.corsOrigins);
+  console.log(`🔐 CORS credentials: ${config.corsCredentials ? 'enabled' : 'disabled'}`);
 });
 
 export default app;
