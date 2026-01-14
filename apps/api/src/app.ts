@@ -8,12 +8,37 @@ import routes from './routes/index.js';
 const app: Application = express();
 
 // Middlewares
+const allowedOrigins = [
+  config.frontendUrl,
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'CashFlow API is running',
+    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv,
+  });
+});
 
 // Routes
 app.use('/api', routes);
