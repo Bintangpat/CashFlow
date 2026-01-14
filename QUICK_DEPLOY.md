@@ -17,21 +17,23 @@ JWT_SECRET=<generate-strong-secret-32-chars>
 JWT_EXPIRES_IN=7d
 RESEND_API_KEY=<your-resend-key>
 EMAIL_FROM=CashFlow <noreply@yourdomain.com>
-FRONTEND_URL=https://your-app.vercel.app
+CORS_ORIGINS=https://your-app.vercel.app
+CORS_CREDENTIALS=true
 ```
 
-> **Important**: You'll update `FRONTEND_URL` after Vercel deployment!
+> **Important**: You'll update `CORS_ORIGINS` after Vercel deployment!
 
 ### 3️⃣ Run Database Migrations
 ```bash
-# Option 1: Using Railway CLI
+# Option 1: Using Railway CLI (Recommended)
 railway login
 railway link
-railway run pnpm --filter @cashflow/api prisma migrate deploy
+railway run pnpm --filter @cashflow/api db:migrate:deploy
 
-# Option 2: Add to Railway build command temporarily
-# Build Command: pnpm install --frozen-lockfile && pnpm --filter @cashflow/api prisma migrate deploy && pnpm --filter @cashflow/api build
+# Option 2: Manual SQL - See DATABASE_MIGRATION_GUIDE.md
 ```
+
+> ⚠️ **CRITICAL**: Don't skip this step! Your app won't work without database tables.
 
 ---
 
@@ -59,6 +61,8 @@ NEXTAUTH_URL=https://your-app.vercel.app
 NEXTAUTH_SECRET=<generate-strong-secret-32-chars>
 ```
 
+> ⚠️ **IMPORTANT**: `NEXT_PUBLIC_API_URL` must include `https://` at the beginning!
+> 
 > Replace `your-railway-url` with your actual Railway URL from Step 1!
 
 ### 4️⃣ Redeploy Vercel
@@ -70,9 +74,9 @@ After adding environment variables:
 
 ## Connect Railway with Vercel
 
-### 1️⃣ Update Railway FRONTEND_URL
+### 1️⃣ Update Railway CORS_ORIGINS
 1. Go to Railway → Your Service → **Variables**
-2. Update `FRONTEND_URL` to your Vercel URL: `https://your-app.vercel.app`
+2. Update `CORS_ORIGINS` to your Vercel URL: `https://your-app.vercel.app`
 3. Railway will auto-redeploy with new CORS settings
 
 ---
@@ -146,13 +150,17 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 - `JWT_EXPIRES_IN=7d`
 - `RESEND_API_KEY` (from resend.com)
 - `EMAIL_FROM` (your email)
-- `FRONTEND_URL` (your Vercel URL)
+- `CORS_ORIGINS` (your Vercel URL - comma-separated for multiple)
+- `CORS_CREDENTIALS=true`
 
 **Vercel Environment Variables:**
-- `NEXT_PUBLIC_API_URL` (your Railway URL + `/api`)
+- `NEXT_PUBLIC_API_URL` (your Railway URL + `/api` - **must include https://**)
 - `NEXTAUTH_URL` (your Vercel URL)
 - `NEXTAUTH_SECRET` (generate strong secret)
 
 ---
 
-**Need More Help?** Check `DEPLOYMENT.md` for detailed instructions!
+**Need More Help?** 
+- Database issues? Check `DATABASE_MIGRATION_GUIDE.md`
+- API URL errors? Check `TROUBLESHOOTING_API_URL.md`
+- Full guide? Check `DEPLOYMENT.md`
