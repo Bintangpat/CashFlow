@@ -49,13 +49,13 @@ export const authService = {
   async verifySignup(input: VerifyOtpInput) {
     const user = await userRepository.findByEmail(input.email);
     if (!user) {
-      throw new AppError('User tidak ditemukan', 404);
+      throw new AppError('User tidak ditemukan. Silakan daftar ulang.', 404);
     }
 
     // Verify OTP
     const validOtp = await otpRepository.verify(user.id, input.code, 'SIGNUP');
     if (!validOtp) {
-      throw new AppError('Kode OTP tidak valid atau sudah kadaluarsa', 400);
+      throw new AppError('Kode OTP tidak valid atau sudah kadaluarsa. Silakan minta kode OTP baru.', 400);
     }
 
     // Mark email as verified
@@ -117,7 +117,7 @@ export const authService = {
     // Verify OTP
     const validOtp = await otpRepository.verify(user.id, input.code, 'LOGIN');
     if (!validOtp) {
-      throw new AppError('Kode OTP tidak valid atau sudah kadaluarsa', 400);
+      throw new AppError('Kode OTP tidak valid atau sudah kadaluarsa. Silakan minta kode OTP baru.', 400);
     }
 
     // Generate token

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
 
 export class AppError extends Error {
   statusCode: number;
@@ -35,9 +36,28 @@ export const errorMiddleware = (
     });
   }
 
+  // Prisma database connection error
+  if (err instanceof Prisma.PrismaClientInitializationError) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database tidak tersedia. Mohon coba lagi nanti.',
+      code: 'DATABASE_UNAVAILABLE',
+    });
+  }
+
+  // Prisma known request error
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    return res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan pada database',
+      code: err.code,
+    });
+  }
+
   // Default error
   return res.status(500).json({
     success: false,
     message: 'Internal server error',
   });
 };
+

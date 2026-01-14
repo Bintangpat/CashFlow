@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from './config/index.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import routes from './routes/index.js';
 
-const app = express();
+const app: Application = express();
 
 // Middlewares
 app.use(cors({

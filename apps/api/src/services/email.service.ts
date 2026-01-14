@@ -1,7 +1,9 @@
 import { Resend } from 'resend';
 import { config } from '../config/index.js';
 
-const resend = new Resend(config.resendApiKey);
+// Check if Resend API key is configured
+const isResendConfigured = config.resendApiKey && !config.resendApiKey.includes('xxxxxxxx');
+const resend = isResendConfigured ? new Resend(config.resendApiKey) : null;
 
 export const emailService = {
   async sendOTP(email: string, code: string, type: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD') {
@@ -17,6 +19,17 @@ export const emailService = {
       RESET_PASSWORD: 'Gunakan kode berikut untuk reset password Anda:',
     };
 
+    // If Resend is not configured, log OTP to console (development mode)
+    if (!resend) {
+      console.log('='.repeat(60));
+      console.log('📧 DEVELOPMENT MODE - OTP EMAIL');
+      console.log(`To: ${email}`);
+      console.log(`Subject: ${subjects[type]}`);
+      console.log(`OTP Code: ${code}`);
+      console.log('='.repeat(60));
+      return { id: 'dev-mode' };
+    }
+
     try {
       const { data, error } = await resend.emails.send({
         from: config.emailFrom || 'CashFlow <noreply@resend.dev>',
@@ -25,14 +38,14 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #7c3aed; margin: 0;">💰 CashFlow</h1>
+              <h1 style="color: #65a30d; margin: 0;">💰 CashFlow</h1>
               <p style="color: #64748b; margin-top: 5px;">Keuangan Bisnis & POS</p>
             </div>
             
             <div style="background: #f8fafc; border-radius: 12px; padding: 30px; text-align: center;">
               <p style="color: #475569; margin-bottom: 20px;">${messages[type]}</p>
               
-              <div style="background: #7c3aed; color: white; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px 30px; border-radius: 8px; display: inline-block;">
+              <div style="background: #65a30d; color: white; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px 30px; border-radius: 8px; display: inline-block;">
                 ${code}
               </div>
               
@@ -50,13 +63,14 @@ export const emailService = {
 
       if (error) {
         console.error('Failed to send email:', error);
-        throw new Error('Gagal mengirim email');
+        throw new Error(`Gagal mengirim email: ${error.message}`);
       }
 
       return data;
     } catch (error) {
       console.error('Email service error:', error);
-      throw new Error('Gagal mengirim email');
+      throw new Error('Gagal mengirim email. Silakan coba lagi.');
     }
   },
 };
+
