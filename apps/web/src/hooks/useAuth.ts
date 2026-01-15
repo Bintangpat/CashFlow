@@ -70,7 +70,11 @@ export function useAuth() {
     onSuccess: (response) => {
       queryClient.setQueryData(['auth', 'me'], response.data);
       toast.success('Email berhasil diverifikasi!');
-      router.push('/');
+      
+      // Use window.location for hard redirect to ensure cookie is loaded
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Kode OTP tidak valid');
@@ -98,7 +102,11 @@ export function useAuth() {
       queryClient.setQueryData(['auth', 'me'], response.data);
       toast.success('Login berhasil!');
       console.log('🔄 Redirecting to dashboard...');
-      router.push('/');
+      
+      // Use window.location for hard redirect to ensure cookie is loaded
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     },
     onError: (error: Error) => {
       console.log('❌ Login verification failed:', error);

@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface PublicRouteProps {
   children: React.ReactNode;
@@ -23,11 +24,15 @@ export function PublicRoute({ children }: PublicRouteProps) {
     }
   }, [user, isLoading, router]);
 
-  // If authenticated, show nothing (will redirect)
-  if (user) {
-    return null;
+  // Show loading while checking auth or redirecting
+  if (isLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  // Not authenticated or loading, render children
+  // Not authenticated, render children
   return <>{children}</>;
 }
