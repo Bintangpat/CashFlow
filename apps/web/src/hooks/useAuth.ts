@@ -38,9 +38,12 @@ export function useAuth() {
     queryKey: ['auth', 'me'],
     queryFn: async () => {
       try {
+        console.log('🔍 Checking authentication...');
         const response = await api.get<AuthResponse>('/auth/me');
+        console.log('✅ Authenticated:', response.data);
         return response.data;
-      } catch {
+      } catch (err) {
+        console.log('❌ Not authenticated:', err);
         return null;
       }
     },
@@ -91,11 +94,14 @@ export function useAuth() {
     mutationFn: (input: { email: string; code: string }) => 
       api.post<AuthResponse>('/auth/verify-login', input),
     onSuccess: (response) => {
+      console.log('✅ Login verified:', response);
       queryClient.setQueryData(['auth', 'me'], response.data);
       toast.success('Login berhasil!');
+      console.log('🔄 Redirecting to dashboard...');
       router.push('/');
     },
     onError: (error: Error) => {
+      console.log('❌ Login verification failed:', error);
       toast.error(error.message || 'Kode OTP tidak valid');
     },
   });

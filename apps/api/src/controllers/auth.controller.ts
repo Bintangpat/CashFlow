@@ -12,19 +12,29 @@ import { config } from '../config/index.js';
 // Cookie configuration for cross-domain authentication
 // Production: Vercel (frontend) ↔ Railway (backend) requires sameSite='none' with secure
 // Development: localhost requires sameSite='lax' without secure
+
+const isProduction = config.nodeEnv === 'production';
+
 const cookieOptions: {
   httpOnly: boolean;
   secure: boolean;
   sameSite: 'none' | 'lax';
   maxAge: number;
   path: string;
+  domain?: string;
 } = {
   httpOnly: true,
-  secure: config.nodeEnv === 'production', // HTTPS only in production
-  sameSite: config.nodeEnv === 'production' ? 'none' : 'lax', // 'none' for cross-domain
+  secure: isProduction, // HTTPS only in production
+  sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-domain, 'lax' for localhost
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/', // Cookie available for all paths
+  // Don't set domain - let browser handle it automatically
 };
+
+// Debug logging in development
+if (!isProduction) {
+  console.log('🍪 Cookie Options:', cookieOptions);
+}
 
 export const authController = {
   // Step 1: Request signup - sends OTP
