@@ -118,7 +118,7 @@ function LoginContent() {
               
               <div className="text-center text-sm text-muted-foreground">
                 Belum punya akun?{' '}
-                <Link href="/register" className="text-primary hover:underline">
+                <Link href="/auth/register" className="text-primary hover:underline">
                   Daftar
                 </Link>
               </div>

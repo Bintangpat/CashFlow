@@ -70,7 +70,7 @@ export function useAuth() {
       
       // Use window.location for hard redirect
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/admin/dashboard';
       }, 100);
     },
     onError: (error: Error) => {
@@ -90,7 +90,7 @@ export function useAuth() {
       
       // Use window.location for hard redirect
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/admin/dashboard';
       }, 100);
     },
     onError: (error: Error) => {
@@ -107,7 +107,7 @@ export function useAuth() {
       toast.success(response.data.message);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Gagal mengirim OTP'  );
+      toast.error(error.message || 'Gagal mengirim OTP');
     },
   });
 
@@ -141,7 +141,7 @@ export function useAuth() {
       queryClient.setQueryData(['auth', 'me'], null);
       queryClient.clear();
       toast.success('Logout berhasil!');
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     },
   });
 

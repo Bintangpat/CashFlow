@@ -225,7 +225,7 @@ function RegisterContent() {
                 
                 <div className="text-center text-sm text-muted-foreground">
                   Sudah punya akun?{' '}
-                  <Link href="/login" className="text-primary hover:underline">
+                  <Link href="/auth/login" className="text-primary hover:underline">
                     Masuk
                   </Link>
                 </div>

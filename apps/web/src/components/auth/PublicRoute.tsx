@@ -20,7 +20,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
   useEffect(() => {
     if (!isLoading && user) {
       // Already authenticated, redirect to dashboard
-      router.push('/');
+      router.push('/admin/dashboard');
     }
   }, [user, isLoading, router]);
 
