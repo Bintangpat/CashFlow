@@ -9,11 +9,21 @@ import {
 import { AuthRequest } from '../middlewares/auth.middleware.js';
 import { config } from '../config/index.js';
 
-const cookieOptions = {
+// Cookie configuration for cross-domain authentication
+// Production: Vercel (frontend) ↔ Railway (backend) requires sameSite='none' with secure
+// Development: localhost requires sameSite='lax' without secure
+const cookieOptions: {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'none' | 'lax';
+  maxAge: number;
+  path: string;
+} = {
   httpOnly: true,
-  secure: config.nodeEnv === 'production',
-  sameSite: 'lax' as const,
+  secure: config.nodeEnv === 'production', // HTTPS only in production
+  sameSite: config.nodeEnv === 'production' ? 'none' : 'lax', // 'none' for cross-domain
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: '/', // Cookie available for all paths
 };
 
 export const authController = {
