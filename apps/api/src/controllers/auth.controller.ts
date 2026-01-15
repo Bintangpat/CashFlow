@@ -3,7 +3,9 @@ import { authService } from '../services/auth.service.js';
 import { 
   registerSchema, 
   loginSchema,
-  verifyOtpSchema,
+  verifyEmailSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   resendOtpSchema
 } from '../validators/auth.validator.js';
 import { AuthRequest } from '../middlewares/auth.middleware.js';
@@ -37,11 +39,14 @@ if (!isProduction) {
 }
 
 export const authController = {
-  // Step 1: Request signup - sends OTP
-  async requestSignup(req: Request, res: Response, next: NextFunction) {
+  /**
+   * REGISTRATION FLOW
+   * Step 1: Register - create user account and send OTP
+   */
+  async register(req: Request, res: Response, next: NextFunction) {
     try {
       const input = registerSchema.parse(req.body);
-      const result = await authService.requestSignup(input);
+      const result = await authService.register(input);
 
       res.status(200).json({
         success: true,
@@ -52,12 +57,15 @@ export const authController = {
     }
   },
 
-  // Step 2: Verify signup OTP
-  async verifySignup(req: Request, res: Response, next: NextFunction) {
+  /**
+   * Step 2: Verify email with OTP
+   */
+  async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
-      const input = verifyOtpSchema.parse({ ...req.body, type: 'SIGNUP' });
-      const result = await authService.verifySignup(input);
+      const input = verifyEmailSchema.parse(req.body);
+      const result = await authService.verifyEmail(input);
 
+      // Set cookie with JWT token
       res.cookie('token', result.token, cookieOptions);
 
       res.status(200).json({
@@ -70,27 +78,16 @@ export const authController = {
     }
   },
 
-  // Request login OTP
-  async requestLogin(req: Request, res: Response, next: NextFunction) {
+  /**
+   * LOGIN FLOW
+   * Traditional email + password login
+   */
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       const input = loginSchema.parse(req.body);
-      const result = await authService.requestLogin(input);
+      const result = await authService.login(input);
 
-      res.status(200).json({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  // Verify login OTP
-  async verifyLogin(req: Request, res: Response, next: NextFunction) {
-    try {
-      const input = verifyOtpSchema.parse({ ...req.body, type: 'LOGIN' });
-      const result = await authService.verifyLogin(input);
-
+      // Set cookie with JWT token
       res.cookie('token', result.token, cookieOptions);
 
       res.status(200).json({
@@ -103,7 +100,44 @@ export const authController = {
     }
   },
 
-  // Resend OTP
+  /**
+   * FORGOT PASSWORD FLOW
+   * Step 1: Request password reset OTP
+   */
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = forgotPasswordSchema.parse(req.body);
+      const result = await authService.forgotPassword(input);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Step 2: Reset password with OTP
+   */
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = resetPasswordSchema.parse(req.body);
+      const result = await authService.resetPassword(input);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Resend OTP for email verification or password reset
+   */
   async resendOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const input = resendOtpSchema.parse(req.body);
@@ -118,7 +152,9 @@ export const authController = {
     }
   },
 
-  // Logout
+  /**
+   * LOGOUT
+   */
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
       res.clearCookie('token', cookieOptions);
@@ -132,7 +168,9 @@ export const authController = {
     }
   },
 
-  // Get current user
+  /**
+   * Get current authenticated user
+   */
   async me(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       if (!req.user) {

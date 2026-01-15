@@ -15,7 +15,7 @@ export const userRepository = {
 
   async create(data: {
     email: string;
-    passwordHash?: string;
+    passwordHash: string;  // Required
     role?: 'OWNER' | 'CASHIER';
     emailVerified?: boolean;
   }) {

@@ -67,4 +67,12 @@ export const otpRepository = {
       },
     });
   },
+
+  async invalidateAll(userId: string) {
+    // Mark all OTPs for this user as used
+    await prisma.otpToken.updateMany({
+      where: { userId },
+      data: { used: true },
+    });
+  },
 };

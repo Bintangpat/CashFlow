@@ -4,11 +4,12 @@ import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router: RouterType = Router();
 
-// Public routes - OTP based auth
-router.post('/register', authController.requestSignup);
-router.post('/verify-signup', authController.verifySignup);
-router.post('/login', authController.requestLogin);
-router.post('/verify-login', authController.verifyLogin);
+// Public routes
+router.post('/register', authController.register);
+router.post('/verify-email', authController.verifyEmail);
+router.post('/login', authController.login);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 router.post('/resend-otp', authController.resendOtp);
 router.post('/logout', authController.logout);
 
