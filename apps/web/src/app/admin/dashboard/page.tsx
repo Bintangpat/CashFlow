@@ -44,31 +44,31 @@ function DashboardContent() {
       title: 'Kasir (POS)',
       description: 'Transaksi penjualan',
       icon: ShoppingCart,
-      href: '/pos',
+      href: '/admin/pos',
     },
     {
       title: 'Produk',
       description: 'Kelola produk & stok',
       icon: Package,
-      href: '/products',
+      href: '/admin/products',
     },
     {
       title: 'Terima Barang',
       description: 'Tambah stok dari supplier',
       icon: Truck,
-      href: '/stock-receiving',
+      href: '/admin/stock-receiving',
     },
     {
       title: 'Keuangan',
       description: 'Pemasukan & pengeluaran',
       icon: Wallet,
-      href: '/finance',
+      href: '/admin/finance',
     },
     {
       title: 'Laporan',
       description: 'Analisis & statistik',
       icon: BarChart3,
-      href: '/reports',
+      href: '/admin/reports',
     },
   ];
 
