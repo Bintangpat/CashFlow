@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { 
   ShoppingCart, 
   Package, 
@@ -19,10 +20,16 @@ import {
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading, logout } = useAuth();
-  const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
+}
 
-  const isLoading = authLoading || dashboardLoading;
+function DashboardContent() {
+  const { user, logout } = useAuth();
+  const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -65,7 +72,7 @@ export default function DashboardPage() {
     },
   ];
 
-  if (isLoading) {
+  if (dashboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

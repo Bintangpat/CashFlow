@@ -8,12 +8,21 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { PublicRoute } from '@/components/auth/PublicRoute';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 
 type AuthStep = 'email' | 'otp';
 type AuthType = 'login' | 'register';
 
 export default function LoginPage() {
+  return (
+    <PublicRoute>
+      <LoginContent />
+    </PublicRoute>
+  );
+}
+
+function LoginContent() {
   const { 
     requestSignup, 
     verifySignup, 
