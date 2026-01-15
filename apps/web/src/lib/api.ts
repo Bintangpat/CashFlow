@@ -1,10 +1,16 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// Validate API URL in production
-if (typeof window !== 'undefined' && API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')) {
-  console.error('❌ NEXT_PUBLIC_API_URL must start with http:// or https://');
-  console.error('Current value:', API_URL);
-  console.error('Expected format: https://your-api-domain.com/api');
+// Validate API URL (allow relative URLs for Vercel API Proxy)
+if (typeof window !== 'undefined' && API_URL) {
+  const isRelativeUrl = API_URL.startsWith('/');
+  const isAbsoluteUrl = API_URL.startsWith('http://') || API_URL.startsWith('https://');
+  
+  if (!isRelativeUrl && !isAbsoluteUrl) {
+    console.error('❌ NEXT_PUBLIC_API_URL must be either:');
+    console.error('  - Relative URL for API proxy: /api');
+    console.error('  - Absolute URL: https://your-api-domain.com/api');
+    console.error('Current value:', API_URL);
+  }
 }
 
 interface RequestOptions extends RequestInit {
