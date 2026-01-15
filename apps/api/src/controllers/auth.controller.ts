@@ -11,26 +11,24 @@ import {
 import { AuthRequest } from '../middlewares/auth.middleware.js';
 import { config } from '../config/index.js';
 
-// Cookie configuration for cross-domain authentication
-// Production: Vercel (frontend) ↔ Railway (backend) requires sameSite='none' with secure
-// Development: localhost requires sameSite='lax' without secure
+// Cookie configuration for authentication
+// With Vercel API Proxy, all requests are same-origin (no cross-domain)
+// So we can use sameSite='lax' even in production!
 
 const isProduction = config.nodeEnv === 'production';
 
 const cookieOptions: {
   httpOnly: boolean;
   secure: boolean;
-  sameSite: 'none' | 'lax';
+  sameSite: 'lax' | 'strict';
   maxAge: number;
   path: string;
-  domain?: string;
 } = {
   httpOnly: true,
   secure: isProduction, // HTTPS only in production
-  sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-domain, 'lax' for localhost
+  sameSite: 'lax', // Safe to use 'lax' with same-origin requests
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/', // Cookie available for all paths
-  // Don't set domain - let browser handle it automatically
 };
 
 // Debug logging in development
